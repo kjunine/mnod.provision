@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu/trusty64"
+
+  config.vm.define "base" do |base|
+    base.vm.hostname = "base"
+    base.vm.network "private_network", ip: "192.168.7.7"
+    base.vm.network "forwarded_port", guest: 2375, host: 2375
+
+    base.vm.provision :file, source: "docker", destination: "~/docker"
+    base.vm.provision :shell,
+      inline: "cp /home/vagrant/docker /etc/default/docker"
+
+    base.vm.provision :docker,
+      images: [
+        "kjunine/mongodb:latest",
+        "kjunine/mongodb-replset-configurator:latest",
+        "kjunine/mms-monitoring-agent:latest",
+        "kjunine/mms-backup-agent:latest",
+        "kjunine/nodejs:latest",
+        "kjunine/mnod:latest"
+      ]
+  end
+end
